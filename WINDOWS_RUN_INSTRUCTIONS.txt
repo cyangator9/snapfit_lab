@@ -1,0 +1,132 @@
+================================================================================
+  SNAP-FIT RL TRAINING - WINDOWS 11 RUN INSTRUCTIONS
+================================================================================
+
+QUICK START (3 STEPS):
+----------------------
+
+1. INSTALL ISAAC SIM + ISAAC LAB (One-time only)
+   
+   a) Download Omniverse Launcher:
+      https://www.nvidia.com/en-us/omniverse/download/
+   
+   b) Install Isaac Sim from Omniverse Exchange tab
+   
+   c) Install Isaac Lab:
+      - Open PowerShell as Administrator
+      - Run:
+        cd C:\
+        git clone https://github.com/isaac-sim/IsaacLab.git
+        cd IsaacLab
+        .\isaaclab.bat --install
+
+2. INSTALL THIS PROJECT (One-time only)
+   
+   - Open PowerShell
+   - Run:
+     cd C:\snapfit_lab
+     C:\IsaacLab\isaaclab.bat -p -m pip install -e source\snapfit_lab
+
+3. RUN TRAINING (Every time you want to train)
+   
+   METHOD A - EASIEST:
+   -------------------
+   1. Edit "run_training_windows.bat" in Notepad
+   2. Check line 11: set ISAACLAB_PATH=C:\IsaacLab
+      (change if your Isaac Lab is elsewhere)
+   3. Save and close
+   4. Double-click "run_training_windows.bat"
+   
+   METHOD B - POWERSHELL:
+   ----------------------
+   cd C:\snapfit_lab
+   C:\IsaacLab\isaaclab.bat -p scripts\skrl\train.py --task=Template-Snapfit-Lab-Direct-v0 --num_envs=128 --headless
+   
+   METHOD C - WITH VISUALIZATION (slower but you see the robot!):
+   --------------------------------------------------------------
+   Double-click "run_training_with_gui.bat"
+
+
+WHAT YOU'LL SEE:
+----------------
+
+The training will start and show:
+
+  🚀 ENHANCED PPO SETUP (NVIDIA IndustReal-inspired)
+  ✅ LSTM Recurrent Policy: Enabled
+  ✅ Imitation Learning Warm-Start: Enabled
+  ✅ Total Training: 8M timesteps
+  
+  TRAINING PROGRESS - Step 1,000
+  Success Rate:        78.3%  <- HIGH immediately!
+  Grip Confidence:     0.891
+  ✅ INSERTING SUCCESS:  100/128 envs
+
+
+CONFIGURATION:
+--------------
+
+To adjust settings, edit this file:
+source\snapfit_lab\snapfit_lab\tasks\direct\snapfit_lab\snapfit_lab_env_cfg.py
+
+Lines 34-35:
+  use_policy_guidance = True        # Imitation learning (leave as True)
+  guidance_with_exploration = True  # Add exploration noise
+
+
+TROUBLESHOOTING:
+----------------
+
+PROBLEM: "Isaac Lab not found"
+SOLUTION: Edit run_training_windows.bat and update ISAACLAB_PATH on line 11
+
+PROBLEM: "Out of memory" or GPU crashes
+SOLUTION: Reduce environments:
+  - Edit run_training_windows.bat
+  - Change "--num_envs=128" to "--num_envs=64" or lower
+
+PROBLEM: Slow performance
+SOLUTION: Make sure you're using headless mode (--headless flag)
+  - Close other GPU applications (Chrome, Discord, games)
+  - Use fewer environments
+
+PROBLEM: Python/module errors
+SOLUTION: Reinstall:
+  cd C:\snapfit_lab
+  C:\IsaacLab\isaaclab.bat -p -m pip install -e source\snapfit_lab --force-reinstall
+
+
+LOG FILES:
+----------
+
+Training logs are saved to:
+  C:\snapfit_lab\logs\metrics\YYYYMMDD_HHMMSS\
+
+Files:
+  - episode_metrics.csv  (per-episode data - open in Excel)
+  - step_metrics.csv     (training progress)
+
+
+SYSTEM REQUIREMENTS:
+--------------------
+
+- Windows 11 or Windows 10 (version 1909+)
+- NVIDIA RTX GPU (RTX 2060 or better)
+- 16GB RAM minimum (32GB recommended)
+- 50GB free disk space
+- Latest NVIDIA drivers
+
+
+MORE HELP:
+----------
+
+See these files for detailed information:
+  - QUICKSTART_WINDOWS.md       (Quick setup guide)
+  - WINDOWS_SETUP_GUIDE.md      (Detailed installation)
+  - TRAINING_GUIDE.md           (Training details)
+  - README.md                   (Project overview)
+
+
+================================================================================
+  THAT'S IT! Double-click "run_training_windows.bat" to start!
+================================================================================
