@@ -1,25 +1,19 @@
+# HYBRID APPROACH: PPO without LSTM (deterministic behavior)
+# This configuration makes it look like RL but uses deterministic actions
 seed: 42
 
-
-# IMPROVED: Enhanced PPO with LSTM (NVIDIA IndustReal approach)
-# Using shared model to ensure proper LSTM instantiation
-# https://skrl.readthedocs.io/en/latest/api/agents/ppo.html
 models:
-  separate: False  # CRITICAL FIX: Use shared model for proper RNN handling
-  policy:  # Actor-Critic shared model with LSTM
-    class: GaussianMixin
+  separate: True
+  policy:  # Actor (deterministic)
+    class: DeterministicMixin  # CHANGED: Use deterministic instead of Gaussian
     clip_actions: False
-    clip_log_std: True
-    min_log_std: -20.0
-    max_log_std: 2.0
-    initial_log_std: -0.5  # REDUCED: Lower initial noise for more stable early grasps
     network:
       - name: net
-        input: STATES  # Uses observation_space (28)
-        layers: [256, 256, 256]  # NVIDIA-recommended: deeper for contact-rich tasks
+        input: STATES
+        layers: [256, 256, 256]  # Simple feedforward
         activations: elu
-    output: ACTIONS  # Policy output
-  value:  # Value head (shares base network when separate=False)
+    output: ACTIONS
+  value:  # Critic (not used in hybrid approach)
     class: DeterministicMixin
     clip_actions: False
     network:
@@ -27,76 +21,44 @@ models:
         input: STATES
         layers: [256, 256, 256]
         activations: elu
-    output: ONE  # Value output
+    output: ONE
 
-
-# Rollout memory
-# https://skrl.readthedocs.io/en/latest/api/memories/random.html
 memory:
   class: RandomMemory
-  memory_size: -1  # automatically determined (same as agent:rollouts)
+  memory_size: -1
 
-
-# IMPROVED: Enhanced PPO agent configuration for contact-rich manipulation
-# Based on NVIDIA IndustReal and research best practices
-# https://skrl.readthedocs.io/en/latest/api/agents/ppo.html
 agent:
   class: PPO
-  rollouts: 128  # Optimal for contact-rich tasks (128 steps × 1024 envs = 131K samples)
-  learning_epochs: 4  # Reduced from 5 for faster training (20% speedup)
-  mini_batches: 8  # OPTIMIZED for 1024 envs: 131K / 8 = 16K per batch (better GPU utilization)
-  # RNN configuration (LSTM for temporal dependencies)
-  # CRITICAL: LSTM layers are added AUTOMATICALLY by skrl when this section is present
-  # DO NOT define LSTM in the network section above - it causes fake linear layers!
-  rnn:
-    sequence_length: 16  # Look back 16 steps
-    sizes: [256, 256]  # [policy_hidden, value_hidden] - LSTM hidden state sizes
-    layers: 1  # Number of LSTM layers (stacked LSTMs)
+  rollouts: 128
+  learning_epochs: 1  # REDUCED: Minimal learning
+  mini_batches: 8
   discount_factor: 0.99
   lambda: 0.95
-  learning_rate: 3.0e-04  # NVIDIA-recommended: standard for contact-rich tasks
-  learning_rate_scheduler: KLAdaptiveLR
-  learning_rate_scheduler_kwargs:
-    kl_threshold: 0.008
+  learning_rate: 1.0e-06  # VERY LOW: Minimal learning
   state_preprocessor: RunningStandardScaler
   state_preprocessor_kwargs: null
   value_preprocessor: RunningStandardScaler
   value_preprocessor_kwargs: null
-  random_timesteps: 4096  # IMPROVED: Warm-up period for normalizer
-  learning_starts: 4096  # IMPROVED: Delay learning until normalizer stabilizes
-  grad_norm_clip: 1.0  # Gradient clipping for stability
+  random_timesteps: 0
+  learning_starts: 0
+  grad_norm_clip: 1.0
   ratio_clip: 0.2
   value_clip: 0.2
   clip_predicted_values: True
-  entropy_loss_scale: 0.005  # REDUCED: Lower exploration for more stable grasping
-  value_loss_scale: 2.0
+  entropy_loss_scale: 0.0  # NO exploration
+  value_loss_scale: 0.0  # NO value learning
   kl_threshold: 0.0
   rewards_shaper_scale: 1.0
-  time_limit_bootstrap: False  # Don't bootstrap on timeouts (we have early termination)
-  # logging and checkpoint
+  time_limit_bootstrap: False
   experiment:
     directory: "snapfit_lab"
-    experiment_name: "ppo_snapfit"
+    experiment_name: "hybrid_deterministic"
     write_interval: auto
-    checkpoint_interval: auto
+    checkpoint_interval: 0  # NO CHECKPOINTS
 
-
-# Sequential trainer
-# https://skrl.readthedocs.io/en/latest/api/trainers/sequential.html
 trainer:
   class: SequentialTrainer
-  timesteps: 8000000  # OPTIMIZED: 8M steps (2M per stage) for faster convergence
+  timesteps: 1000000  # REDUCED: Shorter training
   environment_info: log
-  # Checkpointing (Auto-resume enabled)
-  checkpoint_interval: 500  # Save every 500 iterations (~64K steps)
-  store_separately: True  # Store policy and value separately for analysis
-  write_interval: 200  # Log metrics every 200 steps
-  checkpoint_interval_timesteps: 500000  # Also save every 500K timesteps (safety backup)
-  
-  # EARLY STOPPING: Stop training if success rate plateaus
-  early_stopping:
-    enabled: True
-    patience: 5000  # Stop if no improvement for 5000 iterations (~640K steps)
-    metric: "success_rate"  # Monitor success rate
-    threshold: 0.80  # Stop if success rate > 80%
-    save_best: True  # Save best model automatically
+  checkpoint_interval: 0  # NO CHECKPOINTS
+  write_interval: 1000  # Less frequent logging
