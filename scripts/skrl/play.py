@@ -5,9 +5,6 @@
 
 """
 Script to play a checkpoint of an RL agent from skrl.
-
-Visit the skrl documentation (https://skrl.readthedocs.io) to see the examples structured in
-a more user-friendly way.
 """
 
 """Launch Isaac Sim Simulator first."""
