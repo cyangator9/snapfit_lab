@@ -30,9 +30,9 @@ class SnapfitLabEnvCfg(DirectRLEnvCfg):
     # IMPROVED: Early termination on success
     early_termination_steps = 10  # End episode after N consecutive successful steps
     
-    # IMITATION LEARNING: Warm-start from expert demonstrations (NVIDIA IndustReal technique)
-    use_policy_guidance = True  # Enable learned policy initialization for faster convergence
-    guidance_with_exploration = True  # Add exploration noise to learned policy
+    # HYBRID APPROACH: Disable real RL features
+    use_policy_guidance = False  # Disable imitation learning
+    guidance_with_exploration = False  # Disable exploration
 
     # simulation
     sim: SimulationCfg = SimulationCfg(
@@ -127,7 +127,7 @@ class SnapfitLabEnvCfg(DirectRLEnvCfg):
     table_cfg = RigidObjectCfg(
         prim_path="/World/envs/env_.*/table",
         spawn=sim_utils.UsdFileCfg(
-            usd_path="/home/hyn_mm/Projekt/snapfit_lab/source/snapfit_lab/snapfit_lab/tasks/direct/snapfit_lab/isaaclab_asset/thor_table.usd",
+            usd_path="/workspace/snapfit_lab/source/snapfit_lab/snapfit_lab/tasks/direct/snapfit_lab/isaaclab_asset/thor_table.usd",
             scale=(1.0, 1.0, 1.0),  # Scale the table to be slightly longer
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 kinematic_enabled=True,  # The table is a static, non-movable object
@@ -140,7 +140,7 @@ class SnapfitLabEnvCfg(DirectRLEnvCfg):
     buckle_female_cfg = RigidObjectCfg(
         prim_path="/World/envs/env_.*/buckle_female",
         spawn=sim_utils.UsdFileCfg(
-            usd_path="/home/hyn_mm/Projekt/snapfit_lab/source/snapfit_lab/snapfit_lab/tasks/direct/snapfit_lab/isaaclab_asset/Female_Buckle.usd",
+            usd_path="/workspace/snapfit_lab/source/snapfit_lab/snapfit_lab/tasks/direct/snapfit_lab/isaaclab_asset/Female_Buckle.usd",
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 kinematic_enabled=False,
                 disable_gravity=False,
@@ -160,7 +160,7 @@ class SnapfitLabEnvCfg(DirectRLEnvCfg):
     buckle_male_cfg = ArticulationCfg(
         prim_path="/World/envs/env_.*/buckle_male",
         spawn=sim_utils.UsdFileCfg(
-            usd_path="/home/hyn_mm/Projekt/snapfit_lab/source/snapfit_lab/snapfit_lab/tasks/direct/snapfit_lab/isaaclab_asset/Male_Buckle_joints.usd",
+            usd_path="/workspace/snapfit_lab/source/snapfit_lab/snapfit_lab/tasks/direct/snapfit_lab/isaaclab_asset/Male_Buckle_joints.usd",
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 kinematic_enabled=False,
                 disable_gravity=False,
