@@ -101,6 +101,7 @@ import isaaclab_tasks  # noqa: F401
 from isaaclab_tasks.utils.hydra import hydra_task_config
 
 import snapfit_lab.tasks  # noqa: F401
+from snapfit_lab.tasks.direct.snapfit_lab.custom_agent import create_custom_agent
 
 # config shortcuts
 algorithm = args_cli.algorithm.lower()
@@ -181,9 +182,13 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     # wrap around environment for skrl
     env = SkrlVecEnvWrapper(env, ml_framework=args_cli.ml_framework)  # same as: `wrap_env(env, wrapper="auto")`
 
-    # configure and instantiate the skrl runner
+    # configure and instantiate the skrl runner with custom agent
     # https://skrl.readthedocs.io/en/latest/api/utils/runner.html
-    runner = Runner(env, agent_cfg)
+    if algorithm == "ppo":
+        # Use custom agent for PPO to handle None tensors
+        runner = Runner(env, agent_cfg, agent_class=create_custom_agent)
+    else:
+        runner = Runner(env, agent_cfg)
 
     # ---------------------------------------------------------------------
     # LSTM presence check (print once at startup)
